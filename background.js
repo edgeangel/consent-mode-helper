@@ -54,7 +54,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       }
     }
 
-    // Google Ads Conversion request
+    // Google Ads Conversion #1 request
     if (details.url.includes("/pagead/conversion/")) {
       const url = new URL(details.url);
       const gcdValue = url.searchParams.get("gcd");
@@ -68,6 +68,36 @@ chrome.webRequest.onBeforeRequest.addListener(
           url: url.href,
           gcdParam: gcdValue,
           enParam: "Google Ads Conversion: " + conversionId + "(" + conversionLabel + ")"
+        };
+		
+		//To get the last entry on top instead of bottom
+		//urlHistory.unshift(urlData);
+
+        urlHistory.push(urlData);
+        if (urlHistory.length > 10) {
+          urlHistory.shift();
+        }
+
+        chrome.runtime.sendMessage({
+          action: "updatePopup",
+          history: urlHistory
+        });
+      }
+    }
+
+    // Google Ads Conversion #2 request
+    if (details.url.includes("/pagead/viewthroughconversion/")) {
+      const url = new URL(details.url);
+      const gcdValue = url.searchParams.get("gcd");
+      const conversionId = details.url.substring(
+        details.url.indexOf("/pagead/viewthroughconversion/") + 30, 
+        details.url.lastIndexOf("/?")
+      );
+      if (gcdValue !== null && conversionId !== null) {
+        const urlData = {
+          url: url.href,
+          gcdParam: gcdValue,
+          enParam: "Google Ads Conversion: " + conversionId
         };
 		
 		//To get the last entry on top instead of bottom

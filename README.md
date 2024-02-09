@@ -7,6 +7,11 @@
 
 ## How to install the unpacked extension in Chrome
 * Click on "Code" > "Download ZIP" to download the extension from this repository and unzip the consent-mode-helper-main folder
+* Enable Chrome developer mode:
+    * Click on the three dots on the top right corner 
+    * "More tools" > "Developer tools"
+    * In the developer tools window, click the three dots in the top right corner
+    * Select Developer mode
 * Go to Chrome Settings using three dots on the top right corner (or go directly to [chrome://extensions](chrome://extensions))
 * Click on "Load unpacked" and select the consent-mode-helper-main folder
 * Click on "Details" and enable "Pin to toolbar" 

@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Consent Mode Helper",
-	"version": "1.1",
+	"version": "1.2",
 	"description": "The Consent Mode Helper is a troubleshooting tool that helps you validate your Google Consent Mode v2 implementation.",
 	"permissions": [
 	  "webRequest",
