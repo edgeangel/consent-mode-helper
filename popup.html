@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Consent Mode Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px 10px 5px 10px;
+            background-color: #fff;
+			min-width: 400px;
+			/*max-height: 300px;*/
+        }
+        h1 {
+            font-size: 14px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        h1 img {
+            margin-right: 5px;
+        }
+        .listItem {
+            background-color: #edf3fa;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .enItem {
+            cursor: pointer;
+            color: #333333;
+            font-weight: bold;
+			font-size: 12px;
+        }
+        .detailsDiv {
+            color: #555555;
+            margin-top: 5px;
+            display: none; /* initialement caché */
+            font-size: 10px;
+        }
+		.detailsDiv, .enItem, .gcdItem {
+            word-wrap: break-word; /* Permet de casser les mots longs */
+            overflow-wrap: break-word; /* Alternative pour les navigateurs qui ne supportent pas word-wrap */
+        }
+        .gcdItem {
+            font-size: 11px;
+        }
+		.gcdItem .green {
+			color: #0F9D58;
+		}
+		.gcdItem .grey {
+			color: #797979;
+		}
+        .gcdItem .red {
+			color: #DB4437;
+		}
+        p.ea {
+            font-size: 10px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: right;
+        }
+    </style>
+</head>
+<body>
+    <h1><img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="50" height="17">Consent Mode Helper</h1>
+    <div id="urlList">No event received for the moment ...</div>
+    <script src="popup.js"></script>
+    <p class="ea">Made with &#x1F499; by <a href="https://hello.edgeangel.co/contactez-nous?utm_source=consent_mode_helper" target="_blank"><img alt="Logo" height="20" src="https://assets.super.so/66ace621-238b-4c0a-95d3-869a21c8d863/uploads/logo/72ee8e1c-b1c8-4d38-9609-b75743bae97b.svg" decoding="async" data-nimg="fill" ></a></p>
+</body>
+</html>

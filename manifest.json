@@ -1,0 +1,31 @@
+{
+	"manifest_version": 2,
+	"name": "Consent Mode Helper",
+	"version": "1.1",
+	"description": "The Consent Mode Helper is a troubleshooting tool that helps you validate your Google Consent Mode v2 implementation.",
+	"permissions": [
+	  "webRequest",
+	  "webRequestBlocking",
+	  "tabs",
+	  "<all_urls>"
+	],
+	"background": {
+	  "scripts": ["background.js"],
+	  "persistent": true
+	},
+	"browser_action": {
+	  "default_popup": "popup.html",
+	  "max-height": 300,
+	  "default_icon": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+      }
+	},
+    "icons": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  }
+  
