@@ -6,9 +6,9 @@
 ![EdgeAngel - Consent Mode Helper](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/372d5598-ca42-4eac-9895-1358a79c53d2/consent-mode-helper/w=640,quality=80)
 
 ## How to install the unpacked extension in Chrome
-* Click on "Code" > "Download ZIP" to download the extension from this repository and unzip the consent-mode-helper folder
+* Click on "Code" > "Download ZIP" to download the extension from this repository and unzip the consent-mode-helper-main folder
 * Go to Chrome Settings using three dots on the top right corner (or go directly to [chrome://extensions](chrome://extensions))
-* Click on "Load unpacked" and select the consent-mode-helper folder
+* Click on "Load unpacked" and select the consent-mode-helper-main folder
 * Click on "Details" and enable "Pin to toolbar" 
 
 ## Documentation and resources
