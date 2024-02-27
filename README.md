@@ -3,10 +3,11 @@
 # consent-mode-helper
 🔎 Consent Mode Helper: Chrome extension for Google Consent Mode v2
 
-![EdgeAngel - Consent Mode Helper](https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/372d5598-ca42-4eac-9895-1358a79c53d2/consent-mode-helper/w=640,quality=80)
+![EdgeAngel - Consent Mode Helper](https://assets.edgeangel.co/ea_gcmv2.png)
 
 ## How to install the unpacked extension in Chrome
-* Click on "Code" > "Download ZIP" to download the extension from this repository and unzip the consent-mode-helper-main folder
+* Click on "Code" > "Download ZIP" to download the extension from this repository
+* Unzip the consent-mode-helper-main folder and move it somewhere you won't change in the future (ex: Documents)
 * Go to chrome://extensions
 * Enable Chrome developer mode in the top right corner
 * Click on "Load unpacked" and select the consent-mode-helper-main folder
