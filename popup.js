@@ -56,12 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function processGcdValue(gcdValue) {
-		// Supprimer les 2 premiers et le dernier caractère
-		let processedValue = gcdValue.substring(2, gcdValue.length - 1);
-	
-		// Split par le 2ème caractère de la valeur (initialement "1")
-		let splitValues = processedValue.split(gcdValue.charAt(1));
-	
+		let htmlContent = "";
+
 		// Labels pour chaque valeur
 		const labels = [
 			"Advertising (storage)",
@@ -69,14 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			"Advertising (user data)",
 			"Advertising (personalization)"
 		];
-	
-		// Associer chaque valeur à un label
-		let meaningList = splitValues.map((value, index) => {
-			let label = labels[index] || "Unknown";
-			return "<span class='" + getColor(value) + "'>" + "<strong>" + label + "</strong>: " + getMeaning(value) + "</span>";
-		}).join("<br>");
-	
-		return meaningList;
+
+		//Génération du code HTML basé sur la valeur GCD
+		for (let i=0; i<labels.length; i++) {
+			htmlContent += "<span class='" + getColor(gcdValue.charAt(2+2*i)) + "'>" + "<strong>" + labels[i] + "</strong>: " + getMeaning(gcdValue.charAt(2+2*i)) + "</span><br>";
+		}
+		return htmlContent;
 	}
 
     function getMeaning(value) {
