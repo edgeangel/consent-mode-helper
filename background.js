@@ -27,7 +27,7 @@ chrome.webRequest.onBeforeRequest.addListener(
     }
 
     // GA4 collect request
-    if (details.url.includes("/g/collect?v")) {
+    if (details.url.includes("/g/collect?v") || details.url.includes("v=2&tid=")) {
       const url = new URL(details.url);
       const gcdValue = url.searchParams.get("gcd");
       const enValue = url.searchParams.get("en");
