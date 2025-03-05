@@ -1,31 +1,25 @@
 {
-	"manifest_version": 2,
-	"name": "Consent Mode Helper",
-	"version": "1.3",
-	"description": "The Consent Mode Helper is a troubleshooting tool that helps you validate your Google Consent Mode v2 implementation.",
-	"permissions": [
-	  "webRequest",
-	  "webRequestBlocking",
-	  "tabs",
-	  "<all_urls>"
-	],
-	"background": {
-	  "scripts": ["background.js"],
-	  "persistent": true
-	},
-	"browser_action": {
-	  "default_popup": "popup.html",
-	  "max-height": 300,
-	  "default_icon": {
-        "16": "images/icon16.png",
-        "48": "images/icon48.png",
-        "128": "images/icon128.png"
-      }
-	},
-    "icons": {
-      "16": "images/icon16.png",
-      "48": "images/icon48.png",
-      "128": "images/icon128.png"
+  "manifest_version": 3,
+  "name": "Consent Mode Helper",
+  "version": "2.0",
+  "description": "Validate your Consent Mode implementations (Google Consent Mode, Microsoft UET Consent Mode, Microsoft Clarity Consent,...)",
+  "permissions": ["activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
     }
+  ],
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
   }
-  
+}

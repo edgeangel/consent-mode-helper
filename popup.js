@@ -1,104 +1,136 @@
-const default_message = 'No event received for the moment ...';
+document.addEventListener("DOMContentLoaded", async () => {
+    const outputElement = document.getElementById("output");
 
-document.addEventListener('DOMContentLoaded', function() {
-    chrome.runtime.sendMessage({action: "getHistory"}, function(response) {
-        if (response.history) {
-            updateUrlList(response.history);
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (!tab || !tab.id) {
+            outputElement.textContent = "Error: Unable to access the active tab.";
+            return;
         }
-    });
 
-	chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-		if (request.action === "updatePopup") {
-			if (request.history.length === 0) { 
-				urlList.innerHTML = default_message;
-			} else {
-		  		updateUrlList(request.history);
-			}
-		} else if (request.action === "cleanPopup") {
-		  document.getElementById("urlList").innerHTML = default_message;
-		}
-	});
+        const response = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            world: "MAIN",
+            func: () => {
+                let googleConsent = null;
+                let uetConsent = null;
+                let clarityConsent = null;
 
-    function updateUrlList(history) {
-        const urlList = document.getElementById("urlList");
-        urlList.innerHTML = '';
+                // 🟢 Google Consent Mode
+                if (window.google_tag_data?.ics?.entries) {
+                    const googleEntries = window.google_tag_data.ics.entries;
 
-        history.forEach(item => {
-            const listItem = document.createElement('div');
-            listItem.className = 'listItem';
+                    const processEntry = (key) => {
+                        const entry = googleEntries[key];
+                        if (!entry) return { value: "Not available", type: "" };
 
-            const toggleDiv = document.createElement('div');
-            toggleDiv.className = 'toggleDiv';
-            toggleDiv.onclick = function() {
-                detailsDiv.style.display = detailsDiv.style.display === 'block' ? 'none' : 'block';
-            };
+                        const update = entry.update;
+                        const defaultValue = entry.default;
 
-            const enItem = document.createElement('span');
-            enItem.className = 'enItem';
-            enItem.innerHTML = item.enParam + "<br>";
+                        return {
+                            value: update === undefined
+                                ? (defaultValue ? "Granted" : "Denied")
+                                : (update ? "Granted" : "Denied"),
+                            type: `<span class='status-type'>${update === undefined ? "default" : "update"}</span>`
+                        };
+                    };
 
-            const gcdItem = document.createElement('span');
-            gcdItem.className = 'gcdItem';
-            gcdItem.innerHTML = processGcdValue(item.gcdParam);
+                    googleConsent = {
+                        analytics_storage: processEntry("analytics_storage"),
+                        ad_storage: processEntry("ad_storage"),
+                        ad_user_data: processEntry("ad_user_data"),
+                        ad_personalization: processEntry("ad_personalization"),
+                    };
+                }
 
-            const detailsDiv = document.createElement('div');
-            detailsDiv.className = 'detailsDiv';
-            detailsDiv.innerHTML = 'GCD Value: ' + item.gcdParam + "<br>";
-			detailsDiv.innerHTML += 'URL: ' + item.url + "<br>";
-            detailsDiv.style.display = 'none';
+                // 🟢 Microsoft UET Consent Mode
+                if (window.uetq?.uetConfig?.consent?.enabled) {
+                    const adStorageAllowed = window.uetq.uetConfig.consent.adStorageAllowed;
+                    const adStorageUpdated = window.uetq.uetConfig.consent.adStorageUpdated;
 
-            toggleDiv.appendChild(enItem);
-            toggleDiv.appendChild(gcdItem);
-            listItem.appendChild(toggleDiv);
-            listItem.appendChild(detailsDiv);
-            urlList.appendChild(listItem);
+                    uetConsent = {
+                        ad_storage: {
+                            value: adStorageAllowed ? "Granted" : "Denied",
+                            type: `<span class='status-type'>${adStorageUpdated ? "update" : "default"}</span>`
+                        }
+                    };
+                }
+
+                // 🟢 Microsoft Clarity Consent Mode
+                if (typeof window.clarity !== "undefined") {
+                    const cookies = document.cookie.split("; ");
+                    const clarityCookie = cookies.find(cookie => cookie.startsWith("_clck="));
+
+                    clarityConsent = {
+                        consent: {
+                            value: clarityCookie ? "Granted" : "Denied",
+                            type: "" // Remove default/update type for Clarity
+                        }
+                    };
+                }
+
+                return { googleConsent, uetConsent, clarityConsent };
+            }
         });
+
+        const data = response[0]?.result;
+        if (!data) {
+            outputElement.textContent = "Consent Mode not implemented.";
+            return;
+        }
+
+        let googleConsentHTML = "";
+        let uetConsentHTML = "";
+        let clarityConsentHTML = "";
+
+        // 🔹 Generate table for Google Consent Mode if data exists
+        if (data.googleConsent) {
+            googleConsentHTML = `
+                <h3 class="google-consent-mode"><img src="https://assets.edgeangel.co/icon-google.png">Google Consent Mode</h3>
+                <table class="consent-table">
+                    ${generateConsentRow("analytics_storage", data.googleConsent.analytics_storage)}
+                    ${generateConsentRow("ad_storage", data.googleConsent.ad_storage)}
+                    ${generateConsentRow("ad_user_data", data.googleConsent.ad_user_data)}
+                    ${generateConsentRow("ad_personalization", data.googleConsent.ad_personalization)}
+                </table>
+            `;
+        }
+
+        // 🔹 Generate table for Microsoft UET Consent Mode if enabled
+        if (data.uetConsent) {
+            uetConsentHTML = `
+                <h3 class="microsoft-consent-mode"><img src="https://assets.edgeangel.co/icon-ms.png">Microsoft UET Consent Mode</h3>
+                <table class="consent-table">
+                    ${generateConsentRow("ad_storage", data.uetConsent.ad_storage)}
+                </table>
+            `;
+        }
+
+        // 🔹 Generate table for Microsoft Clarity Consent Mode if enabled
+        if (data.clarityConsent) {
+            clarityConsentHTML = `
+                <h3 class="clarity-consent-mode"><img src="https://assets.edgeangel.co/icon-ms.png">Microsoft Clarity Consent</h3>
+                <table class="consent-table">
+                    ${generateConsentRow("consent", data.clarityConsent.consent)}
+                </table>
+            `;
+        }
+
+        outputElement.innerHTML = googleConsentHTML + uetConsentHTML + clarityConsentHTML;
+    } catch (error) {
+        /*outputElement.textContent = `Error: ${error.message}`;*/
     }
-
-    function processGcdValue(gcdValue) {
-		let htmlContent = "";
-
-		// Labels pour chaque valeur
-		const labels = [
-			"Advertising (storage)",
-			"Analytics (storage)",
-			"Advertising (user data)",
-			"Advertising (personalization)"
-		];
-
-		//Génération du code HTML basé sur la valeur GCD
-		for (let i=0; i<labels.length; i++) {
-			htmlContent += "<span class='" + getColor(gcdValue.charAt(2+2*i)) + "'>" + "<strong>" + labels[i] + "</strong>: " + getMeaning(gcdValue.charAt(2+2*i)) + "</span><br>";
-		}
-		return htmlContent;
-	}
-
-    function getMeaning(value) {
-		const meaningTable = {
-			"p": "Denied (default)",
-			"q": "Denied (update)",
-			"t": "Granted (default)",
-			"r": "Granted (update)",
-			"l": "Not defined",
-			"m": "Denied (update)",
-			"u": "Denied (update)",
-			"e": "Granted (update)",
-			"n": "Granted (update)",
-			"v": "Granted (update)"
-		};
-	
-		return meaningTable[value] || "Unknown"; // Retourne "Unknown" si aucune correspondance n'est trouvée
-	}
-
-	function getColor(value) {
-		if (getMeaning(value).indexOf("Granted") >= 0) {
-			return "green";
-		} else if (getMeaning(value).indexOf("Denied") >= 0) {
-			return "grey";
-		} else {
-			return "red";
-		}
-	}
-	
 });
 
+// 🔹 Function to generate a table row
+function generateConsentRow(key, consent) {
+    if (!consent) return ""; // Prevents undefined errors
+
+    return `
+        <tr>
+            <td class="consent-signal">${key} ${consent.type}</td>
+            <td class="consent-status ${consent.value.toLowerCase()}">${consent.value}</td>
+        </tr>
+    `;
+}

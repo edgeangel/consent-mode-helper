@@ -1,73 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consent Mode Helper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        @font-face{
+            font-family: 'Google Sans';
+            font-style: normal;
+            font-weight: 500;
+            src: url(https://fonts.gstatic.com/s/googlesans/v16/4UabrENHsxJlGDuGo1OIlLU94YtzCwZsPF4o.woff2)
+            format('woff2');
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            padding: 1px 10px 5px 10px;
+            width: 200px;
+            font-family: 'Inter', sans-serif;
+        }
+        pre {
             margin: 0;
-            padding: 10px 10px 5px 10px;
-            background-color: #fff;
-			min-width: 400px;
-			/*max-height: 300px;*/
+            white-space: normal;
+            padding-top: 0;
         }
-        h1 {
-            font-size: 14px;
+        h3 {
+            margin: 0;
             display: flex;
-            flex-direction: row;
             align-items: center;
         }
-        h1 img {
-            margin-right: 5px;
+        h3 img{
+            width: 20px;
+            margin-right: 3px;
+            margin-left: -3px;
         }
-        .listItem {
-            background-color: #edf3fa;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .google-consent-mode {
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1f1f1f;
+            font-optical-sizing: auto;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
         }
-        .enItem {
-            cursor: pointer;
-            color: #333333;
-            font-weight: bold;
-			font-size: 12px;
+
+        .consent-table {
+            border-collapse: collapse;
+            margin-top: 10px;
         }
-        .detailsDiv {
-            color: #555555;
-            margin-top: 5px;
-            display: none; /* initialement caché */
-            font-size: 10px;
+
+        .consent-table td {
+            margin-bottom: 2px;
+            margin-top: 2px;
         }
-		.detailsDiv, .enItem, .gcdItem {
-            word-wrap: break-word; /* Permet de casser les mots longs */
-            overflow-wrap: break-word; /* Alternative pour les navigateurs qui ne supportent pas word-wrap */
+
+        .microsoft-consent-mode, .clarity-consent-mode {
+            font-family: 'Roboto', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1f1f1f;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
         }
-        .gcdItem {
+
+        .microsoft-consent-mode img {
+            width: 20px;
+            margin-right: 3px;
+            margin-left: -3px;
+        }
+
+        .consent-signal {
+            font-family: 'Roboto', sans-serif;
+            text-align: left;
             font-size: 11px;
+            font-weight: 400;
+            color: rgba(0, 0, 0, .7);
+            padding: 0 10px 0 0;
+            -webkit-font-smoothing: antialiased;
+            width: 135px;
         }
-		.gcdItem .green {
-			color: #0F9D58;
-		}
-		.gcdItem .grey {
-			color: #797979;
-		}
-        .gcdItem .red {
-			color: #DB4437;
-		}
-        p.ea {
+
+        .consent-status {
+            font-family: 'Roboto', sans-serif;
+            font-size: 11px;
+            font-weight: 400;
+            text-align: center;
+            padding: 4px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 45px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .granted {
+            background: #e6f4ea;
+            color: #137333;
+        }
+
+        .denied {
+            background: #fce8e6;
+            color: #b31412;
+        }
+
+        .consent-signal .status-type {
+            font-size: 9px;
+            font-weight: 900;
+            color: rgba(0, 0, 0, .3);
+        }
+
+        a.ea {
             font-size: 10px;
             display: flex;
-            flex-direction: row;
             align-items: center;
-            justify-content: right;
+            margin-top: 10px;
+            font-family: 'Roboto', sans-serif;
+            background-color: #164D81;
+            border-radius: 4px;
+            color: #FFF;
+            padding: 2px 0px 2px 10px;
+            justify-content: center;
+            text-decoration: none;
         }
+
     </style>
+
 </head>
 <body>
-    <h1><img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="50" height="17">Consent Mode Helper</h1>
-    <div id="urlList">No event received for the moment ...</div>
+    <pre id="output"></pre>
     <script src="popup.js"></script>
-    <p class="ea">Made with &#x1F499; by <a href="https://hello.edgeangel.co/contactez-nous?utm_source=consent_mode_helper" target="_blank"><img alt="Logo" height="20" src="https://assets.super.so/66ace621-238b-4c0a-95d3-869a21c8d863/uploads/logo/72ee8e1c-b1c8-4d38-9609-b75743bae97b.svg" decoding="async" data-nimg="fill" ></a></p>
+    <a class="ea" href="https://edgeangel.co?utm_source=consent_mode_helper" target="_blank">
+        Made with 🤍 by <img alt="Logo" height="20" src="https://images.spr.so/cdn-cgi/imagedelivery/j42No7y-dcokJuNgXeA0ig/5c85588b-9e8c-4d15-81e2-af275e128d03/ea_logo_2023_white/w=256,quality=90,fit=scale-down" decoding="async" data-nimg="fill">
+    </a>
 </body>
 </html>
