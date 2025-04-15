@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Consent Mode Helper",
+  "name": "__MSG_extensionName__",
   "version": "2.1",
-  "description": "Validate your Consent Mode implementations (Google Consent Mode, Microsoft UET Consent Mode, Microsoft Clarity Consent,...)",
+  "description": "__MSG_extensionDescription__",
   "permissions": ["activeTab", "scripting"],
+  "default_locale": "fr",
   "background": {
     "service_worker": "background.js"
   },

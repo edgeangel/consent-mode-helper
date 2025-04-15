@@ -1,0 +1,8 @@
+{
+    "extensionName": {
+      "message": "Consent Mode Helper"
+    },
+    "extensionDescription": {
+      "message": "Validate your Consent Mode implementations (Google Consent Mode, Microsoft UET Consent Mode, Microsoft Clarity Consent,...)"
+    }
+  }
