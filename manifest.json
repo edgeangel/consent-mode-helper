@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Consent Mode Helper",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Validate your Consent Mode implementations (Google Consent Mode, Microsoft UET Consent Mode, Microsoft Clarity Consent,...)",
   "permissions": ["activeTab", "scripting"],
   "background": {
