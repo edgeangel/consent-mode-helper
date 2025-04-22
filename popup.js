@@ -1,5 +1,11 @@
+import { trackPopupOpen } from './data.js';
+
 document.addEventListener("DOMContentLoaded", async () => {
     const outputElement = document.getElementById("output");
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = new URL(tab.url);
+    const domain = url.hostname;
 
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -116,6 +122,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </table>
             `;
         }
+
+        trackPopupOpen(domain, data);
 
         outputElement.innerHTML = googleConsentHTML + uetConsentHTML + clarityConsentHTML;
     } catch (error) {
