@@ -1,23 +1,32 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "2.2",
+  "version": "2.3",
   "description": "__MSG_extensionDescription__",
-  "permissions": ["activeTab", "scripting"],
   "default_locale": "fr",
+  "permissions": ["activeTab", "scripting", "sidePanel"],
+  "host_permissions": ["<all_urls>"],
+
   "background": {
     "service_worker": "background.js"
   },
+
   "action": {
-    "default_popup": "popup.html"
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Ouvrir le panneau latéral"
   },
-  "host_permissions": ["<all_urls>"],
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
   ],
+
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

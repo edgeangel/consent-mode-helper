@@ -17,7 +17,7 @@ export function trackPopupOpen(domain, data) {
         {
           name: "open",
           params: {
-            source: "popup.html",
+            source: "sidepanel.html",
             page_domain: domain
           }
         }

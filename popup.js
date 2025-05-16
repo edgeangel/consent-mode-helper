@@ -1,11 +1,20 @@
 import { trackPopupOpen } from './data.js';
 
 document.addEventListener("DOMContentLoaded", async () => {
+
     const outputElement = document.getElementById("output");
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = new URL(tab.url);
-    const domain = url.hostname;
+    let domain = "unknown";
+
+    try {
+    if (tab?.url) {
+        const url = new URL(tab.url);
+        domain = url.hostname;
+    }
+    } catch (e) {
+    
+    }
 
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -19,9 +28,53 @@ document.addEventListener("DOMContentLoaded", async () => {
             target: { tabId: tab.id },
             world: "MAIN",
             func: () => {
+                function getCookie(name) {
+                    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                    return match ? decodeURIComponent(match[2]) : null;
+                }
+
                 let googleConsent = null;
                 let uetConsent = null;
                 let clarityConsent = null;
+                let pianoConsent = null;
+                
+                // 🟢 Piano Analytics Consent Mode
+                try {
+                    const result = { type: null, mode: {} };
+
+                    if (typeof pa !== "undefined" && pa.privacy && pa.privacy.currentMode !== '') {
+                        result.type = "privacy";
+                        result.mode["PA"] = pa.privacy.currentMode;
+
+                    } else if (typeof pa === "undefined") {
+                        const atid = getCookie("atid");
+                        const paPrivacyRaw = getCookie("pa_privacy");
+
+                        if (atid && !paPrivacyRaw) {
+                            result.type = "privacy";
+                            result.mode["AM"] = "exempt";
+
+                        } else if (atid && paPrivacyRaw) {
+                            let parsedValue;
+                            try {
+                                parsedValue = JSON.parse(paPrivacyRaw);
+                            } catch (e) {
+                                parsedValue = paPrivacyRaw.replace(/^%22|%22$/g, '');
+                            }
+                            result.type = "privacy";
+                            result.mode["AM"] = parsedValue;
+                        }
+
+                    } else if (typeof pa !== "undefined" && pa.privacy && pa.privacy.currentMode === '') {
+                        result.type = "consent";
+                        if (typeof pa.consent.getMode === "function") {
+                            result.mode["AM"] = pa.consent.getMode();
+                        }
+                    }
+
+                    pianoConsent = result;
+
+                } catch (err) {console.log('Piano error:', err);}
 
                 // 🟢 Google Consent Mode
                 if (window.google_tag_data?.ics?.entries) {
@@ -76,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     };
                 }
 
-                return { googleConsent, uetConsent, clarityConsent };
+                return { googleConsent, uetConsent, clarityConsent, pianoConsent };
             }
         });
 
@@ -89,6 +142,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         let googleConsentHTML = "";
         let uetConsentHTML = "";
         let clarityConsentHTML = "";
+        let pianoConsentHTML = "";
+
+        // 🔹 Generate table for Piano Analytics Consent Mode if data exists
+        if (data.pianoConsent && data.pianoConsent.type && data.pianoConsent.type != null) {
+            pianoConsentHTML = `
+                <h3 class="piano-consent-mode">
+                    <img src="https://assets.edgeangel.co/icon-piano.svg">Piano Analytics Consent Mode
+                </h3>
+                <table class="consent-table">
+                    <tr>
+                        <td class="consent-signal">${data.pianoConsent.type} mode</td>
+                        <td class="consent-status ${getPianoClass(Object.values(data.pianoConsent.mode)[0])}">
+                            ${formatPianoValue(Object.values(data.pianoConsent.mode)[0])}
+                        </td>
+                    </tr>
+            `;
+            for (const [key, value] of Object.entries(data.pianoConsent.mode)) {
+                if (key !== "PA" && key !== "AM") {
+                    pianoConsentHTML += `
+                    <tr>
+                        <td class="consent-signal">${key}</td>
+                        <td class="consent-status ${getPianoClass(value)}">
+                            ${formatPianoValue(value)}
+                        </td>
+                    </tr>`;
+                }
+            }
+            pianoConsentHTML += `</table>`;
+        }
 
         // 🔹 Generate table for Google Consent Mode if data exists
         if (data.googleConsent) {
@@ -125,7 +207,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         trackPopupOpen(domain, data);
 
-        outputElement.innerHTML = googleConsentHTML + uetConsentHTML + clarityConsentHTML;
+        outputElement.innerHTML = googleConsentHTML + uetConsentHTML + clarityConsentHTML + pianoConsentHTML;
+
     } catch (error) {
         /*outputElement.textContent = `Error: ${error.message}`;*/
     }
@@ -141,4 +224,22 @@ function generateConsentRow(key, consent) {
             <td class="consent-status ${consent.value.toLowerCase()}">${consent.value}</td>
         </tr>
     `;
+}
+
+// 🔹 Function to format Piano values
+function formatPianoValue(val) {
+    const v = (val || "").toLowerCase();
+    if (v.includes("opt-in") || v.includes("optin")) return "Opt-in"; 
+    if (v.includes("optout") || v.includes("opt-out")) return "Opt-out";
+    if (v.includes("exempt") || v.includes("essential")) return "Exempt";
+    return val;
+}
+
+// 🔹 Function to get Piano class based on value
+function getPianoClass(val) {
+    const v = (val || "").toLowerCase();
+    if (v.includes("opt-in") || v.includes("optin")) return "granted";
+    if (v.includes("optout") || v.includes("opt-out")) return "denied";
+    if (v.includes("exempt") || v.includes("essential")) return "exempt";
+    return "";
 }
