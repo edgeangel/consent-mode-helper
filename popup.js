@@ -144,11 +144,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                             // Check if values are valid ('granted' or 'denied')
                             if ((analyticsValue === 'granted' || analyticsValue === 'denied') && (adValue === 'granted' || adValue === 'denied')) {
                                 return {
-                                    analytics_storage: {
+                                    analytics_Storage: {
                                         value: analyticsValue === 'granted' ? "Granted" : "Denied",
                                         type: ""
                                     },
-                                    ad_storage: {
+                                    ad_Storage: {
                                         value: adValue === 'granted' ? "Granted" : "Denied",
                                         type: ""
                                     }
