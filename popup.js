@@ -117,24 +117,78 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 // 🟢 Microsoft Clarity Consent Mode
-                if (typeof window.clarity !== "undefined") {
-                    const cookies = document.cookie.split("; ");
-                    const clarityCookie = cookies.find(cookie => cookie.startsWith("_clck="));
+                if (typeof window.clarity === "function") {
+                    // This function must be async because the Clarity metadata API is callback-based.
+                    // We wrap it in a Promise to use it with await.
+                    const getClarityConsent = async () => {
+                        try {
+                            const consentData = await new Promise((resolve, reject) => {
+                                // Set a timeout to prevent the script from hanging indefinitely
+                                const timeout = setTimeout(() => {
+                                    reject(new Error("Clarity metadata callback timed out."));
+                                }, 1000); // 1 second timeout
 
-                    clarityConsent = {
-                        consent: {
-                            value: clarityCookie ? "Granted" : "Denied",
-                            type: "" // Remove default/update type for Clarity
+                                window.clarity('metadata', (data, upgrade, consent) => {
+                                    clearTimeout(timeout);
+                                    if (consent && typeof consent.analytics_Storage !== 'undefined' && typeof consent.ad_Storage !== 'undefined') {
+                                        resolve(consent);
+                                    } else {
+                                        reject(new Error("Clarity consent properties not found in metadata."));
+                                    }
+                                }, false, true, true);
+                            });
+
+                            const analyticsValue = consentData.analytics_Storage;
+                            const adValue = consentData.ad_Storage;
+
+                            // Check if values are valid ('granted' or 'denied')
+                            if ((analyticsValue === 'granted' || analyticsValue === 'denied') && (adValue === 'granted' || adValue === 'denied')) {
+                                return {
+                                    analytics_storage: {
+                                        value: analyticsValue === 'granted' ? "Granted" : "Denied",
+                                        type: ""
+                                    },
+                                    ad_storage: {
+                                        value: adValue === 'granted' ? "Granted" : "Denied",
+                                        type: ""
+                                    }
+                                };
+                            } else {
+                                // If values are not what we expect, throw to trigger fallback
+                                throw new Error("Invalid consent values from Clarity metadata.");
+                            }
+
+                        } catch (e) {
+                            // If the new method fails, fall back to the cookie check.
+                            console.log("Clarity metadata check failed, falling back to cookie:", e.message);
+                            const cookies = document.cookie.split("; ");
+                            const clarityCookie = cookies.find(cookie => cookie.startsWith("_clck="));
+                            return {
+                                consent: {
+                                    value: clarityCookie ? "Granted" : "Denied",
+                                    type: "" // Remove default/update type for Clarity
+                                }
+                            };
                         }
                     };
+                    
+                    // We need to await the result of our async function
+                    // This requires the function passed to executeScript to be async itself.
+                    return getClarityConsent().then(result => {
+                        clarityConsent = result;
+                        return { googleConsent, uetConsent, clarityConsent, pianoConsent };
+                    });
                 }
+
 
                 return { googleConsent, uetConsent, clarityConsent, pianoConsent };
             }
         });
 
-        const data = response[0]?.result;
-        if (!data) {
+        // The result might be a promise if Clarity logic was triggered, so we await it.
+        const data = (await response[0]?.result) || {};
+
+        if (!data.googleConsent && !data.uetConsent && !data.clarityConsent && !data.pianoConsent) {
             outputElement.textContent = "Consent Mode not implemented.";
             return;
         }
@@ -200,11 +254,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             clarityConsentHTML = `
                 <h3 class="clarity-consent-mode"><img src="https://assets.edgeangel.co/icon-ms.png">Microsoft Clarity Consent</h3>
                 <table class="consent-table">
-                    ${generateConsentRow("consent", data.clarityConsent.consent)}
+                    ${Object.entries(data.clarityConsent).map(([key, value]) => generateConsentRow(key, value)).join('')}
                 </table>
             `;
         }
-
+        
         trackPopupOpen(domain, data);
 
         outputElement.innerHTML = googleConsentHTML + uetConsentHTML + clarityConsentHTML + pianoConsentHTML;
